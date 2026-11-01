@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* Enable class based dark mode: <html class="dark"> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand: emerald green */
+  --color-brand-50: #effcf6;
+  --color-brand-100: #d8f7e8;
+  --color-brand-200: #b3eed2;
+  --color-brand-300: #7fdfb6;
+  --color-brand-400: #46c893;
+  --color-brand-500: #1fae79;
+  --color-brand-600: #138c61;
+  --color-brand-700: #10704f;
+  --color-brand-800: #0f5940;
+  --color-brand-900: #0d4934;
+  --color-brand-950: #052a1e;
+
+  /* Accent: gold */
+  --color-accent-300: #f9d27a;
+  --color-accent-400: #f5b942;
+  --color-accent-500: #eaa11f;
+}
