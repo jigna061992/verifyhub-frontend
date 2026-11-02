@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { History as HistoryIcon } from 'lucide-react'
 import api from '../../api/axios'
 import Card from '../../components/ui/Card'
@@ -18,7 +18,8 @@ export default function History() {
   const [error, setError] = useState('')
 
   const [status, setStatus] = useState('')
-  const [service, setService] = useState('')
+  const [searchParams] = useSearchParams()
+  const [service, setService] = useState(searchParams.get('service') ?? '')
   const [page, setPage] = useState(1)
 
   useEffect(() => {

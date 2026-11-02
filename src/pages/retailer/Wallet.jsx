@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Plus, Wallet as WalletIcon, Clock, Lock } from 'lucide-react'
+import { Plus, Wallet as WalletIcon, Clock, Lock, CreditCard } from 'lucide-react'
 import api from '../../api/axios'
 import Card from '../../components/ui/Card'
 import StatCard from '../../components/ui/StatCard'
@@ -9,6 +9,7 @@ import Input, { inputClass } from '../../components/ui/Input'
 import Pagination from '../../components/ui/Pagination'
 import Toast from '../../components/ui/Toast'
 import DownloadButton from '../../components/ui/DownloadButton'
+import RazorpayTopup from '../../components/wallet/RazorpayTopup'
 import { formatINR, formatDate } from '../../utils/format'
 import { getErrorMessage, getFieldErrors } from '../../utils/errors'
 
@@ -121,8 +122,14 @@ export default function Wallet() {
   const [reloadKey, setReloadKey] = useState(0)
 
   const [showForm, setShowForm] = useState(false)
+  const [showOnline, setShowOnline] = useState(false)
+  const [razorpay, setRazorpay] = useState(null) // { enabled, mode, min_amount, max_amount }
   const [toast, setToast] = useState(null)
   const closeToast = useCallback(() => setToast(null), [])
+
+  useEffect(() => {
+    api.get('/retailer/payments/razorpay/config').then((res) => setRazorpay(res.data)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     api.get('/retailer/wallet').then((res) => setSummary(res.data)).catch(() => {})
@@ -149,6 +156,14 @@ export default function Wallet() {
     }
   }, [tab, page, reloadKey])
 
+  const handlePaid = (message) => {
+    setShowOnline(false)
+    setToast({ type: 'success', text: message })
+    setTab('topups')
+    setPage(1)
+    setReloadKey((k) => k + 1)
+  }
+
   const handleSaved = (message) => {
     setShowForm(false)
     setToast({ type: 'success', text: message })
@@ -173,11 +188,26 @@ export default function Wallet() {
             label="Download statement"
             onError={(text) => setToast({ type: 'error', text })}
           />
+          {razorpay?.enabled && (
+            <button
+              onClick={() => setShowOnline(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800"
+            >
+              <CreditCard className="h-4 w-4" /> Add money online
+              {razorpay.mode === 'test' && (
+                <span className="rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-950">Test</span>
+              )}
+            </button>
+          )}
           <button
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800"
+            className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${
+              razorpay?.enabled
+                ? 'border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800'
+                : 'bg-brand-700 text-white hover:bg-brand-800'
+            }`}
           >
-            <Plus className="h-4 w-4" /> Add money
+            <Plus className="h-4 w-4" /> {razorpay?.enabled ? 'Bank transfer (UTR)' : 'Add money'}
           </button>
         </div>
       </div>
@@ -275,6 +305,7 @@ export default function Wallet() {
         <Pagination meta={meta} onPage={setPage} />
       </Card>
 
+      {showOnline && razorpay && <RazorpayTopup config={razorpay} onClose={() => setShowOnline(false)} onPaid={handlePaid} />}
       {showForm && <TopupForm onClose={() => setShowForm(false)} onSaved={handleSaved} />}
     </div>
   )

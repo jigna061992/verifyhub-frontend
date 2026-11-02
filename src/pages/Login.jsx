@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   ShieldCheck, Store, User, Lock, Eye, EyeOff, LogIn, Moon, Sun,
   CheckCircle2, AlertCircle, Wallet, BarChart3,
@@ -46,6 +46,13 @@ export default function Login() {
   const [signedOut] = useState(() => {
     const flag = sessionStorage.getItem('signed_out') === '1'
     sessionStorage.removeItem('signed_out')
+    return flag
+  })
+
+  // Show the "password changed" message once (set by the Reset password page)
+  const [passwordReset] = useState(() => {
+    const flag = sessionStorage.getItem('password_reset') === '1'
+    sessionStorage.removeItem('password_reset')
     return flag
   })
 
@@ -140,6 +147,13 @@ export default function Login() {
             </div>
           )}
 
+          {passwordReset && (
+            <div className="mt-5 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              Your password has been changed. Please sign in with the new password.
+            </div>
+          )}
+
           {error && (
             <div className="mt-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
               <AlertCircle className="h-4 w-4 shrink-0" />
@@ -194,9 +208,9 @@ export default function Login() {
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Password</label>
-                <button type="button" className="text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300">
+                <Link to="/forgot-password" className="text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300">
                   Forgot password?
-                </button>
+                </Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
