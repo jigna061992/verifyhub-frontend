@@ -9,6 +9,7 @@ import api from '../../api/axios'
 import { useAuth } from '../../context/AuthContext'
 import useTheme from '../../hooks/useTheme'
 import NotificationBell from '../NotificationBell'
+import { formatINR } from '../../utils/format'
 
 const NAV = {
   super_admin: [
@@ -126,7 +127,7 @@ function UserMenu({ user, initials, logout }) {
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">{initials}</span>
         <span className="hidden text-left leading-tight sm:block">
           <span className="block text-sm font-semibold text-slate-900 dark:text-white">{user.name}</span>
-          <span className="block text-[11px] text-slate-500 dark:text-slate-400">{ROLE_LABEL[user.role] || user.role}</span>
+          <span className="block text-[11px] text-slate-500 dark:text-slate-400">{user.business_name || ROLE_LABEL[user.role] || user.role}</span>
         </span>
         <ChevronDown className="hidden h-4 w-4 text-slate-400 sm:block" />
       </button>
@@ -155,6 +156,7 @@ export default function AppLayout() {
   const [query, setQuery] = useState('')
   const [pendingTopups, setPendingTopups] = useState(0)
   const [openRecon, setOpenRecon] = useState(0)
+  const [balance, setBalance] = useState(null) // retailer wallet balance shown in the header
   const [enabled, setEnabled] = useState(null) // service codes enabled for this retailer (null = not loaded yet)
 
   const isAdmin = user.role === 'super_admin'
@@ -187,6 +189,17 @@ export default function AppLayout() {
     if (user.role !== 'retailer') return
     api.get('/retailer/services').then((res) => setEnabled(res.data.map((s) => s.code))).catch(() => setEnabled(null))
   }, [user.role])
+
+  // Retailer: wallet balance in the header. Reloads when the page changes and when a screen asks for it.
+  useEffect(() => {
+    if (user.role !== 'retailer') return undefined
+
+    const load = () => api.get('/retailer/wallet').then((res) => setBalance(res.data.available)).catch(() => {})
+
+    load()
+    window.addEventListener('wallet:refresh', load)
+    return () => window.removeEventListener('wallet:refresh', load)
+  }, [user.role, location.pathname])
 
   // Press "/" anywhere to jump to the search box
   useEffect(() => {
@@ -227,7 +240,7 @@ export default function AppLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-gradient-to-b from-navy-950 to-navy-900 text-white transition-transform lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col print:hidden bg-gradient-to-b from-navy-950 to-navy-900 text-white transition-transform lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -298,8 +311,8 @@ export default function AppLayout() {
       </aside>
 
       {/* Main area */}
-      <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85 sm:px-6">
+      <div className="lg:pl-64 print:pl-0">
+        <header className="sticky top-0 z-20 print:hidden flex h-16 items-center gap-3 border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85 sm:px-6">
           <button className={`${iconBtn} lg:hidden`} onClick={() => setOpen(true)} aria-label="Open menu">
             <Menu className="h-5 w-5" />
           </button>
@@ -324,6 +337,17 @@ export default function AppLayout() {
                 />
                 <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-slate-200 px-1.5 text-[11px] text-slate-400 dark:border-slate-700">/</kbd>
               </form>
+            )}
+
+            {user.role === 'retailer' && balance !== null && (
+              <Link
+                to="/retailer/wallet"
+                title="Wallet balance"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:hover:bg-slate-800"
+              >
+                <Wallet className="h-4 w-4 text-brand-600 dark:text-brand-400" />
+                {formatINR(balance)}
+              </Link>
             )}
 
             <button onClick={toggleTheme} aria-label="Toggle dark mode" className={iconBtn}>

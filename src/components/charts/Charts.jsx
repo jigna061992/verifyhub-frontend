@@ -233,3 +233,194 @@ export function GaugeChart({ value }) {
     </svg>
   )
 }
+
+/* ---------------- Daily bars: verified / failed / pending per day (retailer overview) ---------------- */
+
+export function DailyBars({ data }) {
+  const [hover, setHover] = useState(null)
+  const W = 640, H = 260, L = 34, R = 10, T = 12, B = 28
+  const max = Math.max(...data.map((d) => d.verified + d.failed + d.pending), 1)
+  const top = max <= 4 ? max : niceMax(max)
+  const slot = (W - L - R) / data.length
+  const y = (v) => T + (1 - v / top) * (H - T - B)
+  const cx = (i) => L + slot * i + slot / 2
+  const ticks = top <= 4 ? Array.from({ length: top + 1 }, (_, i) => i) : [0, 1, 2, 3, 4].map((i) => (top / 4) * i)
+  const parts = [
+    { key: 'verified', label: 'Verified', color: '#2f55e8' },
+    { key: 'failed', label: 'Failed', color: '#e5484d' },
+    { key: 'pending', label: 'Pending', color: '#e0a21c' },
+  ]
+
+  return (
+    <div>
+      <Legend items={parts.map((p) => ({ label: p.label, color: p.color }))} />
+      <div className="relative mt-2">
+        <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Verifications in the last 7 days">
+          {ticks.map((t) => (
+            <g key={t}>
+              <line x1={L} x2={W - R} y1={y(t)} y2={y(t)} className="stroke-slate-200 dark:stroke-slate-700/70" />
+              <text x={L - 8} y={y(t) + 4} textAnchor="end" className="fill-slate-400 text-[11px]">{Math.round(t)}</text>
+            </g>
+          ))}
+          {data.map((d, i) => {
+            let base = 0
+            return (
+              <g key={d.label}>
+                {parts.map((p) => {
+                  const h = y(base) - y(base + d[p.key])
+                  const rect = d[p.key] > 0 && <rect key={p.key} x={cx(i) - 15} y={y(base + d[p.key])} width="30" height={h} rx="3" fill={p.color} />
+                  base += d[p.key]
+                  return rect
+                })}
+                <text x={cx(i)} y={H - 8} textAnchor="middle" className="fill-slate-500 text-[11px] dark:fill-slate-400">{d.label}</text>
+                <rect x={cx(i) - slot / 2} y={T} width={slot} height={H - T - B} fill="transparent" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} />
+              </g>
+            )
+          })}
+        </svg>
+        {hover !== null && (
+          <Tip x={(cx(hover) / W) * 100} title={data[hover].label} rows={parts.map((p) => ({ label: p.label, color: p.color, value: data[hover][p.key] }))} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- BarSeries: many categories, stacked or side by side (reports) ---------------- */
+
+// data: [{ label, ...values }], series: [{ key, label, color }]
+export function BarSeries({ data, series, stacked = false, money = false, height = 320 }) {
+  const [hover, setHover] = useState(null)
+  const W = 1000, H = height, L = 52, R = 12, T = 14
+  const rotate = data.length > 8
+  const B = rotate ? 64 : 32
+  const total = (d) => (stacked ? series.reduce((a, s) => a + (d[s.key] || 0), 0) : Math.max(...series.map((s) => d[s.key] || 0)))
+  const raw = Math.max(...data.map(total), 1)
+  const top = raw <= 5 && !money ? Math.ceil(raw) : niceMax(raw)
+  const steps = raw <= 5 && !money ? Math.max(Math.ceil(raw), 1) : 5
+  const ticks = Array.from({ length: steps + 1 }, (_, i) => (top / steps) * i)
+  const slot = (W - L - R) / Math.max(data.length, 1)
+  const barW = stacked ? Math.min(slot * 0.62, 34) : Math.min((slot * 0.7) / series.length, 22)
+  const y = (v) => T + (1 - v / top) * (H - T - B)
+  const cx = (i) => L + slot * i + slot / 2
+  const fmt = (n) => (money ? `₹${Number(n).toLocaleString('en-IN')}` : n)
+  // Show about 12 labels at most when there are many bars
+  const every = Math.ceil(data.length / (rotate ? 30 : 12))
+
+  return (
+    <div>
+      <Legend items={series.map((s) => ({ label: s.label, color: s.color }))} />
+      <div className="relative mt-2">
+        <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img">
+          {ticks.map((t) => (
+            <g key={t}>
+              <line x1={L} x2={W - R} y1={y(t)} y2={y(t)} className="stroke-slate-200 dark:stroke-slate-700/70" />
+              <text x={L - 8} y={y(t) + 4} textAnchor="end" className="fill-slate-500 text-[12px] dark:fill-slate-400">
+                {money ? `₹${compact(Math.round(t))}` : Math.round(t)}
+              </text>
+            </g>
+          ))}
+          {data.map((d, i) => {
+            let base = 0
+            return (
+              <g key={d.label + i}>
+                {series.map((s, si) => {
+                  const v = d[s.key] || 0
+                  if (v <= 0) {
+                    return null
+                  }
+                  const x = stacked ? cx(i) - barW / 2 : cx(i) - (barW * series.length) / 2 + si * barW
+                  const yTop = stacked ? y(base + v) : y(v)
+                  const h = stacked ? y(base) - y(base + v) : y(0) - y(v)
+                  if (stacked) base += v
+                  return <rect key={s.key} x={x} y={yTop} width={barW - (stacked ? 0 : 2)} height={Math.max(h, 1)} rx="2" fill={s.color} opacity={hover === null || hover === i ? 1 : 0.55} />
+                })}
+                {i % every === 0 && (
+                  <text
+                    x={cx(i)} y={H - B + 18}
+                    textAnchor={rotate ? 'end' : 'middle'}
+                    transform={rotate ? `rotate(-35 ${cx(i)} ${H - B + 18})` : undefined}
+                    className="fill-slate-500 text-[12px] dark:fill-slate-400"
+                  >
+                    {d.label.length > 16 ? `${d.label.slice(0, 15)}…` : d.label}
+                  </text>
+                )}
+                <rect x={cx(i) - slot / 2} y={T} width={slot} height={H - T - B} fill="transparent" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} />
+              </g>
+            )
+          })}
+        </svg>
+        {hover !== null && (
+          <Tip
+            x={(cx(hover) / W) * 100}
+            title={data[hover].label}
+            rows={series.map((s) => ({ label: s.label, color: s.color, value: fmt(data[hover][s.key] || 0) }))}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Stacked bars with slanted labels: many days or months (reports) ---------------- */
+
+export function StackedBars({ data, height = 300 }) {
+  const [hover, setHover] = useState(null)
+  const many = data.length > 12
+  const W = 900, L = 34, R = 10, T = 12, B = many ? 62 : 32
+  const H = height
+  const max = Math.max(...data.map((d) => d.verified + d.failed + d.pending), 1)
+  const top = max <= 8 ? max : niceMax(max)
+  const slot = (W - L - R) / data.length
+  const barW = Math.min(slot * 0.7, 34)
+  const y = (v) => T + (1 - v / top) * (H - T - B)
+  const cx = (i) => L + slot * i + slot / 2
+  const ticks = top <= 8 ? Array.from({ length: top + 1 }, (_, i) => i) : [0, 1, 2, 3, 4].map((i) => (top / 4) * i)
+  const parts = [
+    { key: 'verified', label: 'Verified', color: '#2f55e8' },
+    { key: 'failed', label: 'Failed', color: '#e5484d' },
+    { key: 'pending', label: 'Pending', color: '#e0a21c' },
+  ]
+  // Label every bar when there are few, otherwise about 15 labels in total
+  const every = Math.max(1, Math.ceil(data.length / 15))
+
+  return (
+    <div>
+      <Legend items={parts.map((p) => ({ label: p.label, color: p.color }))} />
+      <div className="relative mt-2">
+        <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Verifications by outcome">
+          {ticks.map((t) => (
+            <g key={t}>
+              <line x1={L} x2={W - R} y1={y(t)} y2={y(t)} className="stroke-slate-200 dark:stroke-slate-700/70" />
+              <text x={L - 8} y={y(t) + 4} textAnchor="end" className="fill-slate-400 text-[11px]">{Math.round(t)}</text>
+            </g>
+          ))}
+          {data.map((d, i) => {
+            let base = 0
+            return (
+              <g key={d.label + i}>
+                {parts.map((p) => {
+                  const h = y(base) - y(base + d[p.key])
+                  const rect = d[p.key] > 0 && <rect key={p.key} x={cx(i) - barW / 2} y={y(base + d[p.key])} width={barW} height={h} rx="2" fill={p.color} opacity={hover === null || hover === i ? 1 : 0.55} />
+                  base += d[p.key]
+                  return rect
+                })}
+                {i % every === 0 && (
+                  <text
+                    x={cx(i)} y={H - B + 18} textAnchor={many ? 'end' : 'middle'}
+                    transform={many ? `rotate(-40 ${cx(i)} ${H - B + 18})` : undefined}
+                    className="fill-slate-500 text-[11px] dark:fill-slate-400"
+                  >{d.label}</text>
+                )}
+                <rect x={cx(i) - slot / 2} y={T} width={slot} height={H - T - B} fill="transparent" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} />
+              </g>
+            )
+          })}
+        </svg>
+        {hover !== null && (
+          <Tip x={(cx(hover) / W) * 100} title={data[hover].label} rows={parts.map((p) => ({ label: p.label, color: p.color, value: data[hover][p.key] }))} />
+        )}
+      </div>
+    </div>
+  )
+}
