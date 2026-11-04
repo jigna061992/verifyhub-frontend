@@ -220,19 +220,19 @@ export default function Reports() {
         </Card>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6">
         <Card>
           <h2 className="mb-4 font-semibold text-slate-900 dark:text-white">By service</h2>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[500px] text-left text-sm">
+            <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800">
-                  <th className="pb-3 font-semibold">Service</th>
-                  <th className="pb-3 font-semibold">Used</th>
-                  <th className="pb-3 font-semibold">Success</th>
-                  <th className="pb-3 font-semibold">Revenue</th>
-                  <th className="pb-3 font-semibold">Profit</th>
-                  <th className="pb-3 font-semibold">Margin</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Service</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Used</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Success</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Revenue</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Profit</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Margin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -241,12 +241,12 @@ export default function Reports() {
                 )}
                 {data?.by_service.map((s) => (
                   <tr key={s.service} className="text-slate-700 dark:text-slate-200">
-                    <td className="py-3 font-semibold">{s.service}</td>
-                    <td className="py-3">{s.total}</td>
-                    <td className="py-3">{s.success_rate === null ? '-' : `${s.success_rate}%`}</td>
-                    <td className="py-3">{formatINR(s.revenue)}</td>
-                    <td className="py-3 text-brand-700 dark:text-brand-300">{formatINR(s.profit)}</td>
-                    <td className="py-3">{pct(s.margin_percent)}</td>
+                    <td className="px-3 py-3 font-semibold first:pl-0">{s.service}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{s.total}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{s.success_rate === null ? '-' : `${s.success_rate}%`}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{formatINR(s.revenue)}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-brand-700 dark:text-brand-300">{formatINR(s.profit)}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{pct(s.margin_percent)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -257,15 +257,15 @@ export default function Reports() {
         <Card>
           <h2 className="mb-4 font-semibold text-slate-900 dark:text-white">By retailer</h2>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[500px] text-left text-sm">
+            <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800">
-                  <th className="pb-3 font-semibold">Retailer</th>
-                  <th className="pb-3 font-semibold">Checks</th>
-                  <th className="pb-3 font-semibold">KYC</th>
-                  <th className="pb-3 font-semibold">Revenue</th>
-                  <th className="pb-3 font-semibold">Profit</th>
-                  <th className="pb-3 font-semibold">Margin</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Retailer</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Checks</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">KYC</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Revenue</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Profit</th>
+                  <th className="whitespace-nowrap px-3 pb-3 font-semibold first:pl-0">Margin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -274,12 +274,12 @@ export default function Reports() {
                 )}
                 {data?.by_retailer.map((r) => (
                   <tr key={r.retailer_id} className="text-slate-700 dark:text-slate-200">
-                    <td className="py-3 font-semibold">{r.business_name}</td>
-                    <td className="py-3">{r.checks_success}/{r.checks}</td>
-                    <td className="py-3">{r.kyc_completed}/{r.kyc}</td>
-                    <td className="py-3">{formatINR(r.revenue)}</td>
-                    <td className="py-3 text-brand-700 dark:text-brand-300">{formatINR(r.profit)}</td>
-                    <td className="py-3">{pct(r.margin_percent)}</td>
+                    <td className="px-3 py-3 font-semibold first:pl-0">{r.business_name}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{r.checks_success}/{r.checks}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{r.kyc_completed}/{r.kyc}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{formatINR(r.revenue)}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-brand-700 dark:text-brand-300">{formatINR(r.profit)}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{pct(r.margin_percent)}</td>
                   </tr>
                 ))}
               </tbody>
