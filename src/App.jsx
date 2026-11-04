@@ -67,7 +67,6 @@ export default function App() {
             <Route path="verify/aadhaar" element={<AadhaarPage />} />
             <Route path="verify/pan" element={<InstantServicePage code="PAN" />} />
             <Route path="verify/bank" element={<InstantServicePage code="BANK" />} />
-            <Route path="verify/gst" element={<InstantServicePage code="GST" />} />
             <Route path="verify/esign" element={<EsignPage />} />
             <Route path="kyc" element={<KycList />} />
             <Route path="kyc/new" element={<KycNew />} />

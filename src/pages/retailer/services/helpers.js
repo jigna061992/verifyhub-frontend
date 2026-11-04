@@ -14,7 +14,6 @@ export const SERVICE_PATH = {
   AADHAAR: '/retailer/verify/aadhaar',
   PAN: '/retailer/verify/pan',
   BANK: '/retailer/verify/bank',
-  GST: '/retailer/verify/gst',
   ESIGN: '/retailer/verify/esign',
 }
 

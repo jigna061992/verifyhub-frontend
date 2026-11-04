@@ -23,7 +23,7 @@ export default function AuthLayout({ title, subtitle, children }) {
             <ShieldCheck className="h-6 w-6" />
           </span>
           <span className="text-xl font-bold text-slate-900 dark:text-white">
-            Verify<span className="text-accent-500">Hub</span>
+            Verify<span className="text-brand-500">Hub</span>
           </span>
         </Link>
 

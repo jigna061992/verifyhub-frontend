@@ -4,13 +4,12 @@ import { ShieldCheck, Loader2 } from 'lucide-react'
 import api from '../../../api/axios'
 import Input from '../../../components/ui/Input'
 import { getErrorMessage, getFieldErrors } from '../../../utils/errors'
-import { isPan, isIfsc, isGstin, isAccountNo, nameError, panType } from '../../../utils/validators'
+import { isPan, isIfsc, isAccountNo, nameError, panType } from '../../../utils/validators'
 import ConsentCheck from './ConsentCheck'
 import ResultCard from './ResultCard'
 import ServiceShell from './ServiceShell'
 import useService from './useService'
 import { primaryBtn, chipBtn } from './helpers'
-
 
 // One-call services. digits = numbers only, upper = capital letters, check = quick validation
 const CONFIG = {
@@ -34,16 +33,6 @@ const CONFIG = {
       { key: 'ifsc', label: 'IFSC code', placeholder: 'e.g. SBIN0001234', max: 11, upper: true, hint: '11 characters, the 5th is zero', check: (v) => (!v ? 'IFSC code is required.' : !isIfsc(v) ? 'Enter a valid IFSC, like SBIN0001234.' : null) },
     ],
     note: 'Account numbers are masked in history and never stored in full.',
-  },
-  GST: {
-    title: 'GST Verification',
-    subtitle: 'Validate a GSTIN and fetch the registered business details.',
-    button: 'Verify GSTIN',
-    docLabel: 'GSTIN',
-    fields: [
-      { key: 'gstin', label: 'GST number', placeholder: '15 character GSTIN', max: 15, upper: true, hint: '15 characters', check: (v) => (!v ? 'GST number is required.' : !isGstin(v) ? 'Enter a valid 15 character GSTIN.' : null) },
-    ],
-    note: 'Identifiers are masked in history and never stored in full.',
   },
 }
 

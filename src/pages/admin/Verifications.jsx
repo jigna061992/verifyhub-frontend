@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Search, FileCheck2 } from 'lucide-react'
 import api from '../../api/axios'
 import Card from '../../components/ui/Card'
@@ -12,7 +13,6 @@ import { getErrorMessage } from '../../utils/errors'
 const SERVICES = [
   { code: 'PAN', name: 'PAN Verification' },
   { code: 'BANK', name: 'Bank Penny Drop' },
-  { code: 'GST', name: 'GST Verification' },
   { code: 'AADHAAR', name: 'Aadhaar Verification' },
   { code: 'ESIGN', name: 'Consent e-Sign' },
 ]
@@ -23,8 +23,9 @@ export default function Verifications() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [searchParams] = useSearchParams()
+  const [search, setSearch] = useState(searchParams.get('search') ?? '') // the top bar search sends ?search=
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') ?? '')
   const [status, setStatus] = useState('')
   const [service, setService] = useState('')
   const [page, setPage] = useState(1)

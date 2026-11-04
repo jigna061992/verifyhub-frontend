@@ -75,7 +75,7 @@ export default function Login() {
   return (
     <div className="grid min-h-screen font-sans lg:grid-cols-2">
       {/* ---------- Left brand panel ---------- */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 p-12 text-white lg:flex">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-brand-900 p-12 text-white lg:flex">
         {/* Subtle grid background */}
         <div
           className="absolute inset-0 opacity-10"
@@ -85,16 +85,16 @@ export default function Login() {
             backgroundSize: '44px 44px',
           }}
         />
-        {/* Soft gold glow */}
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent-400/20 blur-3xl" />
+        {/* Soft blue glow */}
+        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-500/25 blur-3xl" />
 
         {/* Brand */}
         <div className="relative flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-400 text-brand-950">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 ring-1 ring-brand-400/30">
             <ShieldCheck className="h-6 w-6" />
           </span>
           <div className="leading-tight">
-            <div className="text-xl font-bold">Verify<span className="text-accent-400">Hub</span></div>
+            <div className="text-xl font-bold">Verify<span className="text-brand-400">Hub</span></div>
             <div className="text-[10px] font-semibold tracking-widest text-brand-200">KYC PLATFORM</div>
           </div>
         </div>
@@ -103,10 +103,10 @@ export default function Login() {
         <div className="relative">
           <h1 className="text-5xl font-extrabold leading-tight">
             KYC verification infrastructure for{' '}
-            <span className="text-accent-400">India's retail network.</span>
+            <span className="text-brand-300">India's retail network.</span>
           </h1>
           <p className="mt-5 max-w-md text-brand-100">
-            Onboard retailers, meter every PAN, GSTIN and bank-account check against a prepaid
+            Onboard retailers, meter every PAN, Aadhaar and bank-account check against a prepaid
             wallet, and see the whole network from one secure console.
           </p>
 
@@ -114,7 +114,7 @@ export default function Login() {
             {FEATURES.map(({ icon: Icon, title, text }) => (
               <div key={title} className="rounded-xl border border-white/10 bg-white/5 p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold">
-                  <Icon className="h-4 w-4 text-accent-400" /> {title}
+                  <Icon className="h-4 w-4 text-brand-300" /> {title}
                 </div>
                 <p className="mt-1 text-xs text-brand-100">{text}</p>
               </div>
@@ -173,7 +173,7 @@ export default function Login() {
                     onClick={() => setRole(key)}
                     className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition ${
                       role === key
-                        ? 'bg-brand-700 text-white shadow'
+                        ? 'bg-white text-slate-900 shadow dark:bg-slate-700 dark:text-white'
                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                     }`}
                   >
@@ -254,7 +254,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-700 py-3 text-sm font-semibold text-white shadow hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white shadow hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <LogIn className="h-4 w-4" />
               {submitting ? 'Signing in...' : 'Sign in securely'}

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 /* Enable class based dark mode: <html class="dark"> */
@@ -5,22 +6,44 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Brand: emerald green */
-  --color-brand-50: #effcf6;
-  --color-brand-100: #d8f7e8;
-  --color-brand-200: #b3eed2;
-  --color-brand-300: #7fdfb6;
-  --color-brand-400: #46c893;
-  --color-brand-500: #1fae79;
-  --color-brand-600: #138c61;
-  --color-brand-700: #10704f;
-  --color-brand-800: #0f5940;
-  --color-brand-900: #0d4934;
-  --color-brand-950: #052a1e;
+  /* Brand: royal blue */
+  --color-brand-50: #eef3ff;
+  --color-brand-100: #dce6ff;
+  --color-brand-200: #bfd0ff;
+  --color-brand-300: #93adff;
+  --color-brand-400: #6585fa;
+  --color-brand-500: #3d5ef0;
+  --color-brand-600: #2b47dc;
+  --color-brand-700: #2338b8;
+  --color-brand-800: #212f93;
+  --color-brand-900: #1d2a73;
+  --color-brand-950: #0f1a45;
 
-  /* Accent: gold */
-  --color-accent-300: #f9d27a;
-  --color-accent-400: #f5b942;
-  --color-accent-500: #eaa11f;
+  /* Sidebar / dark surfaces: deep navy */
+  --color-navy-700: #14275a;
+  --color-navy-800: #0f1f47;
+  --color-navy-900: #0a1633;
+  --color-navy-950: #071126;
+
+  /* Accent: amber (counts, warnings) */
+  --color-accent-300: #fcd98a;
+  --color-accent-400: #f8b83b;
+  --color-accent-500: #f2a20f;
+
+  /* Soft lavender page background in light mode, navy cards in dark mode */
+  --color-slate-50: #f4f6fb;
+  --color-slate-800: #1b2848;
+  --color-slate-900: #111b36;
+  --color-slate-950: #0a1229;
 }
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin scrollbars inside the sidebar and tables */
+.thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.thin-scroll::-webkit-scrollbar-thumb { background: rgb(148 163 184 / 0.35); border-radius: 9999px; }

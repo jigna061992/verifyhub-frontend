@@ -6,7 +6,7 @@ import StatusBadge from '../../components/ui/StatusBadge'
 import { inputClass } from '../../components/ui/Input'
 import { formatINR } from '../../utils/format'
 import { getErrorMessage } from '../../utils/errors'
-import { metaFor } from '../../utils/serviceMeta'
+import { metaFor, BUNDLE_PARTS } from '../../utils/serviceMeta'
 
 /* ---------- small helpers ---------- */
 const round2 = (n) => Math.round(Number(n) * 100) / 100
@@ -71,7 +71,7 @@ function exportRateCard(services, cards) {
   cards.forEach((c) => {
     c.prices.forEach((p) => {
       const s = services.find((x) => x.id === p.service_id)
-      if (s && round2(p.price) !== round2(s.default_price)) {
+      if (s && !s.auto_price && round2(p.price) !== round2(s.default_price)) {
         rows.push([c.business_name, c.code, s.name, p.price, 'Custom', s.provider_cost, round2(p.price - s.provider_cost)])
       }
     })
@@ -88,11 +88,17 @@ function exportRateCard(services, cards) {
 
 /* ---------- 1. Default rate card ---------- */
 function DefaultRateCard({ services, drafts, setDrafts, onSave, saving }) {
-  const changed = services.filter((s) => {
+  // Complete KYC (auto_price) is never edited and never saved. It is shown as the sum of its 4 services.
+  const editable = services.filter((s) => !s.auto_price)
+
+  const changed = editable.filter((s) => {
     const d = drafts[s.id]
     return d && (round2(d.default_price) !== round2(s.default_price) || round2(d.provider_cost) !== round2(s.provider_cost))
   })
-  const allValid = services.every((s) => drafts[s.id] && validAmount(drafts[s.id].default_price) && validAmount(drafts[s.id].provider_cost))
+  const allValid = editable.every((s) => drafts[s.id] && validAmount(drafts[s.id].default_price) && validAmount(drafts[s.id].provider_cost))
+
+  const sumOf = (field) =>
+    round2(services.filter((x) => BUNDLE_PARTS.includes(x.code)).reduce((t, x) => t + Number(drafts[x.id]?.[field] || 0), 0))
 
   const setField = (id, field) => (e) => setDrafts({ ...drafts, [id]: { ...drafts[id], [field]: e.target.value } })
 
@@ -127,7 +133,10 @@ function DefaultRateCard({ services, drafts, setDrafts, onSave, saving }) {
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {services.map((s) => {
-              const d = drafts[s.id] ?? { default_price: '', provider_cost: '' }
+              const auto = Boolean(s.auto_price)
+              const d = auto
+                ? { default_price: sumOf('default_price'), provider_cost: sumOf('provider_cost') }
+                : drafts[s.id] ?? { default_price: '', provider_cost: '' }
               const ok = validAmount(d.default_price) && validAmount(d.provider_cost)
               const { margin, pct } = marginOf(d.default_price, d.provider_cost)
 
@@ -138,31 +147,44 @@ function DefaultRateCard({ services, drafts, setDrafts, onSave, saving }) {
                       <ServiceIcon code={s.code} />
                       <div>
                         <div className="font-semibold">{metaFor(s.code).short}</div>
+                        {auto && <div className="text-[11px] text-slate-400">Auto: Aadhaar + PAN + Bank + e-Sign</div>}
                         {!s.enabled && <div className="text-[11px] text-slate-400">disabled</div>}
                       </div>
                     </div>
                   </td>
                   <td className="px-3 py-3">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={d.provider_cost}
-                      onChange={setField(s.id, 'provider_cost')}
-                      aria-label={`${s.name} provider cost`}
-                      className={`${inputClass} w-28`}
-                    />
+                    {auto ? (
+                      <span className="inline-block w-28 rounded-xl bg-slate-100 px-3 py-2 font-semibold dark:bg-slate-800">
+                        {formatINR(d.provider_cost)}
+                      </span>
+                    ) : (
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={d.provider_cost}
+                        onChange={setField(s.id, 'provider_cost')}
+                        aria-label={`${s.name} provider cost`}
+                        className={`${inputClass} w-28`}
+                      />
+                    )}
                   </td>
                   <td className="px-3 py-3">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={d.default_price}
-                      onChange={setField(s.id, 'default_price')}
-                      aria-label={`${s.name} selling price`}
-                      className={`${inputClass} w-28`}
-                    />
+                    {auto ? (
+                      <span className="inline-block w-28 rounded-xl bg-slate-100 px-3 py-2 font-semibold dark:bg-slate-800">
+                        {formatINR(d.default_price)}
+                      </span>
+                    ) : (
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={d.default_price}
+                        onChange={setField(s.id, 'default_price')}
+                        aria-label={`${s.name} selling price`}
+                        className={`${inputClass} w-28`}
+                      />
+                    )}
                   </td>
                   <td className="px-3 py-3 font-semibold">
                     {ok ? (
@@ -220,8 +242,14 @@ function RetailerPricing({ retailers, reloadKey, notify, onSaved }) {
     }
   }, [retailerId, reloadKey])
 
-  const dirty = items ? items.some((i) => round2(values[i.service_id]) !== round2(i.effective_price)) : false
-  const valid = items ? items.every((i) => validAmount(values[i.service_id])) : false
+  // Complete KYC (auto_price) follows the 4 services: it is shown, never typed and never saved
+  const editableItems = items ? items.filter((i) => !i.auto_price) : []
+  const dirty = items ? editableItems.some((i) => round2(values[i.service_id]) !== round2(i.effective_price)) : false
+  const valid = items ? editableItems.every((i) => validAmount(values[i.service_id])) : false
+
+  const bundleTotal = items
+    ? round2(items.filter((i) => BUNDLE_PARTS.includes(i.code)).reduce((t, i) => t + Number(values[i.service_id] || 0), 0))
+    : 0
 
   const resetToDefaults = () =>
     setValues(Object.fromEntries(items.map((i) => [i.service_id, String(i.default_price)])))
@@ -230,7 +258,7 @@ function RetailerPricing({ retailers, reloadKey, notify, onSaved }) {
     setSaving(true)
     try {
       const res = await api.put(`/admin/retailers/${retailerId}/pricing`, {
-        prices: items.map((i) => ({ service_id: i.service_id, price: Number(values[i.service_id]) })),
+        prices: editableItems.map((i) => ({ service_id: i.service_id, price: Number(values[i.service_id]) })),
       })
       applyItems(res.data.services)
       notify({ type: 'success', text: 'Retailer pricing saved.' })
@@ -275,10 +303,11 @@ function RetailerPricing({ retailers, reloadKey, notify, onSaved }) {
         {items && (
           <>
             <div className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4">
-              {items.map((i) => {
-                const value = values[i.service_id] ?? ''
+              {editableItems.map((i) => {
+                const auto = Boolean(i.auto_price)
+                const value = auto ? String(bundleTotal) : values[i.service_id] ?? ''
                 const ok = validAmount(value)
-                const custom = ok && round2(value) !== round2(i.default_price)
+                const custom = !auto && ok && round2(value) !== round2(i.default_price)
                 const { margin, pct } = marginOf(value, i.provider_cost)
 
                 return (
@@ -295,7 +324,11 @@ function RetailerPricing({ retailers, reloadKey, notify, onSaved }) {
                         <ServiceIcon code={i.code} />
                         <span className="font-semibold text-slate-900 dark:text-white">{metaFor(i.code).short}</span>
                       </div>
-                      {custom ? (
+                      {auto ? (
+                        <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                          Auto
+                        </span>
+                      ) : custom ? (
                         <span className="text-xs font-semibold text-brand-700 dark:text-brand-300">● Custom</span>
                       ) : (
                         <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
@@ -316,11 +349,18 @@ function RetailerPricing({ retailers, reloadKey, notify, onSaved }) {
                         min="0"
                         step="0.01"
                         value={value}
+                        readOnly={auto}
+                        disabled={auto}
                         onChange={(e) => setValues({ ...values, [i.service_id]: e.target.value })}
                         aria-label={`${i.name} price for this retailer`}
-                        className={`${inputClass} rounded-l-none ${ok ? '' : 'border-red-400'}`}
+                        className={`${inputClass} rounded-l-none ${ok ? '' : 'border-red-400'} ${auto ? 'cursor-not-allowed bg-slate-100 dark:bg-slate-800' : ''}`}
                       />
                     </div>
+                    {auto && (
+                      <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                        Automatic: Aadhaar + PAN + Bank + e-Sign prices of this retailer.
+                      </p>
+                    )}
 
                     <dl className="mt-4 space-y-2 text-sm">
                       <div className="flex justify-between">
@@ -414,7 +454,10 @@ function CustomRateCards({ cards, services }) {
                 </td>
 
                 {services.map((s) => {
-                  const price = c.map[s.id]
+                  // Complete KYC: the sum of this retailer's prices of the 4 services
+                  const price = s.auto_price
+                    ? round2(services.filter((x) => BUNDLE_PARTS.includes(x.code)).reduce((t, x) => t + Number(c.map[x.id] ?? x.default_price), 0))
+                    : c.map[s.id]
                   const isCustom = price != null && round2(price) !== round2(s.default_price)
 
                   return (

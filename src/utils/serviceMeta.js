@@ -1,4 +1,7 @@
-import { Fingerprint, CreditCard, Landmark, Building2, FileSignature, ShieldCheck, ListChecks } from 'lucide-react'
+import { Fingerprint, CreditCard, Landmark, FileSignature, ShieldCheck, ListChecks } from 'lucide-react'
+
+// Complete KYC price = the sum of these 4 services (calculated by the server, never typed by hand)
+export const BUNDLE_PARTS = ['AADHAAR', 'PAN', 'BANK', 'ESIGN']
 
 // Icon, colour and short name of each service (matched by service code)
 export const SERVICE_META = {
@@ -16,11 +19,6 @@ export const SERVICE_META = {
     icon: Landmark,
     short: 'Bank',
     tone: 'bg-sky-50 text-sky-600 dark:bg-sky-950 dark:text-sky-300',
-  },
-  GST: {
-    icon: Building2,
-    short: 'GST',
-    tone: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-300',
   },
   ESIGN: {
     icon: FileSignature,

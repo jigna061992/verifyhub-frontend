@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Fingerprint, CreditCard, Landmark, Building2, FileSignature, ShieldCheck,
+  Fingerprint, CreditCard, Landmark, FileSignature, ShieldCheck,
   Tags, Plug, AlertTriangle,
 } from 'lucide-react'
 import api from '../../api/axios'
@@ -25,11 +25,6 @@ const META = {
     icon: Landmark,
     tone: 'bg-sky-50 text-sky-600 dark:bg-sky-950 dark:text-sky-300',
     text: 'Penny drop to the account. Returns the account holder name registered with the bank.',
-  },
-  GST: {
-    icon: Building2,
-    tone: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-300',
-    text: 'Validate GSTIN, legal name and registration status.',
   },
   ESIGN: {
     icon: FileSignature,
